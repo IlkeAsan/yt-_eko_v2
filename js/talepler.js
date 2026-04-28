@@ -132,14 +132,24 @@ async function gidenTalepleriYukle() {
 async function talepGuncelle(id, yeniDurum) {
     var sonuc = await veritabani.from('talepler')
         .update({ durum: yeniDurum })
-        .eq('id', id);
+        .eq('id', id)
+        .select();
 
     if (sonuc.error) {
         alert('Güncelleme hatası: ' + sonuc.error.message);
-    } else {
-        alert(yeniDurum == 'onaylandi' ? 'Talep onaylandı!' : 'Talep reddedildi.');
-        talepleriYukle();
+        return;
     }
+
+    // RLS engellerse data boş döner
+    if (!sonuc.data || sonuc.data.length == 0) {
+        alert('Güncelleme yapılamadı. Supabase RLS izni gerekli.\n\n' +
+              'Supabase SQL Editor\'e gidip şu komutu çalıştırın:\n\n' +
+              'CREATE POLICY "satici_guncelle" ON public.talepler FOR UPDATE USING (auth.uid() = satici_id);');
+        return;
+    }
+
+    alert(yeniDurum == 'onaylandi' ? 'Talep onaylandı!' : 'Talep reddedildi.');
+    talepleriYukle();
 }
 
 async function cikisYap() {
