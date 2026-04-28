@@ -12,19 +12,40 @@ window.onload = async function() {
 }
 
 async function talepleriYukle() {
-    gelenTalepleriYukle();
-    gidenTalepleriYukle();
+    await gelenTalepleriYukle();
+    await gidenTalepleriYukle();
+}
+
+// Yardimci: profil bilgisi getir
+async function profilGetir(userId) {
+    var sonuc = await veritabani.from('profiles')
+        .select('ad_soyad, telefon')
+        .eq('id', userId)
+        .single();
+    if (sonuc.data) return sonuc.data;
+    return { ad_soyad: 'Bilinmiyor', telefon: '' };
+}
+
+// Yardimci: ilan bilgisi getir
+async function ilanGetir(ilanId) {
+    var sonuc = await veritabani.from('listings')
+        .select('ders_kodu')
+        .eq('id', ilanId)
+        .single();
+    if (sonuc.data) return sonuc.data;
+    return { ders_kodu: 'Silinmiş İlan' };
 }
 
 async function gelenTalepleriYukle() {
     var sonuc = await veritabani.from('talepler')
-        .select('*, listings:ilan_id(ders_kodu), profiles:alici_id(ad_soyad)')
+        .select('*')
         .eq('satici_id', kullanici.id);
 
     var alan = document.getElementById('gelen-talepler');
+
     if (sonuc.error) {
         console.log('Gelen talepler hatası:', sonuc.error);
-        alan.innerHTML = '<p>Hata oluştu.</p>';
+        alan.innerHTML = '<p>Hata oluştu: ' + sonuc.error.message + '</p>';
         return;
     }
 
@@ -37,7 +58,14 @@ async function gelenTalepleriYukle() {
     var html = '';
     for (var i = 0; i < data.length; i++) {
         var talep = data[i];
-        var durum = talep.durum == 'beklemede' ? 'Bekliyor' : (talep.durum == 'onaylandi' ? 'Onaylandı' : 'Reddedildi');
+
+        // ilan ve alici bilgilerini ayri ayri cek
+        var ilan = await ilanGetir(talep.ilan_id);
+        var alici = await profilGetir(talep.alici_id);
+
+        var durum = 'Bekliyor';
+        if (talep.durum == 'onaylandi') durum = 'Onaylandı';
+        if (talep.durum == 'reddedildi') durum = 'Reddedildi';
 
         var butonlar = '';
         if (talep.durum == 'beklemede') {
@@ -46,8 +74,8 @@ async function gelenTalepleriYukle() {
         }
 
         html += '<div class="ilan-karti">' +
-            '<h3>' + (talep.listings ? talep.listings.ders_kodu : 'Silinmiş İlan') + '</h3>' +
-            '<p><strong>İsteyen:</strong> ' + (talep.profiles ? talep.profiles.ad_soyad : 'Bilinmiyor') + '</p>' +
+            '<h3>' + ilan.ders_kodu + '</h3>' +
+            '<p><strong>İsteyen:</strong> ' + alici.ad_soyad + '</p>' +
             '<p><strong>Durum:</strong> ' + durum + '</p>' +
             butonlar +
             '</div>';
@@ -57,13 +85,14 @@ async function gelenTalepleriYukle() {
 
 async function gidenTalepleriYukle() {
     var sonuc = await veritabani.from('talepler')
-        .select('*, listings:ilan_id(ders_kodu), profiles:satici_id(ad_soyad, telefon)')
+        .select('*')
         .eq('alici_id', kullanici.id);
 
     var alan = document.getElementById('giden-talepler');
+
     if (sonuc.error) {
         console.log('Giden talepler hatası:', sonuc.error);
-        alan.innerHTML = '<p>Hata oluştu.</p>';
+        alan.innerHTML = '<p>Hata oluştu: ' + sonuc.error.message + '</p>';
         return;
     }
 
@@ -76,16 +105,23 @@ async function gidenTalepleriYukle() {
     var html = '';
     for (var i = 0; i < data.length; i++) {
         var talep = data[i];
-        var durum = talep.durum == 'beklemede' ? 'Bekliyor' : (talep.durum == 'onaylandi' ? 'Onaylandı' : 'Reddedildi');
+
+        // ilan ve satici bilgilerini ayri ayri cek
+        var ilan = await ilanGetir(talep.ilan_id);
+        var satici = await profilGetir(talep.satici_id);
+
+        var durum = 'Bekliyor';
+        if (talep.durum == 'onaylandi') durum = 'Onaylandı';
+        if (talep.durum == 'reddedildi') durum = 'Reddedildi';
 
         var iletisim = '';
-        if (talep.durum == 'onaylandi' && talep.profiles && talep.profiles.telefon) {
-            iletisim = '<p style="color:green; font-weight:bold;">📞 Telefon: ' + talep.profiles.telefon + '</p>';
+        if (talep.durum == 'onaylandi' && satici.telefon) {
+            iletisim = '<p style="color:green; font-weight:bold;">📞 Telefon: ' + satici.telefon + '</p>';
         }
 
         html += '<div class="ilan-karti">' +
-            '<h3>' + (talep.listings ? talep.listings.ders_kodu : 'Silinmiş İlan') + '</h3>' +
-            '<p><strong>İlan Sahibi:</strong> ' + (talep.profiles ? talep.profiles.ad_soyad : 'Bilinmiyor') + '</p>' +
+            '<h3>' + ilan.ders_kodu + '</h3>' +
+            '<p><strong>İlan Sahibi:</strong> ' + satici.ad_soyad + '</p>' +
             '<p><strong>Durum:</strong> ' + durum + '</p>' +
             iletisim +
             '</div>';
@@ -101,6 +137,7 @@ async function talepGuncelle(id, yeniDurum) {
     if (sonuc.error) {
         alert('Güncelleme hatası: ' + sonuc.error.message);
     } else {
+        alert(yeniDurum == 'onaylandi' ? 'Talep onaylandı!' : 'Talep reddedildi.');
         talepleriYukle();
     }
 }
