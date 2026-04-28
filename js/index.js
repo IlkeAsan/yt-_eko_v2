@@ -12,6 +12,7 @@ window.onload = async function() {
 
 function menuGuncelle() {
     var linkler = document.getElementById('menu-linkler');
+    if (girisYapanKullanici) {
         linkler.innerHTML = '<a href="index.html">İlanlar</a>' +
             '<a href="talepler.html">Talepler</a>' +
             '<a href="ilanlarim.html">İlanlarım</a>' +
