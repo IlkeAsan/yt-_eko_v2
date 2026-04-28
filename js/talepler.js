@@ -19,11 +19,11 @@ async function talepleriYukle() {
 // Yardimci: profil bilgisi getir
 async function profilGetir(userId) {
     var sonuc = await veritabani.from('profiles')
-        .select('ad_soyad, telefon')
+        .select('ad_soyad, tel')
         .eq('id', userId)
         .single();
     if (sonuc.data) return sonuc.data;
-    return { ad_soyad: 'Bilinmiyor', telefon: '' };
+    return { ad_soyad: 'Bilinmiyor', tel: '' };
 }
 
 // Yardimci: ilan bilgisi getir
@@ -115,8 +115,8 @@ async function gidenTalepleriYukle() {
         if (talep.durum == 'reddedildi') durum = 'Reddedildi';
 
         var iletisim = '';
-        if (talep.durum == 'onaylandi' && satici.telefon) {
-            iletisim = '<p style="color:green; font-weight:bold;">📞 Telefon: ' + satici.telefon + '</p>';
+        if (talep.durum == 'onaylandi' && satici.tel) {
+            iletisim = '<p style="color:green; font-weight:bold;">📞 Telefon: ' + satici.tel + '</p>';
         }
 
         html += '<div class="ilan-karti">' +

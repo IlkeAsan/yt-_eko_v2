@@ -88,14 +88,15 @@ function ilanlariGoster(ilanlar) {
 
         // kendi ilani mi kontrol
         var altKisim = '';
-        if (girisYapanKullanici) {
-            if (ilan.olusturan_id == girisYapanKullanici.id) {
-                altKisim = '<p><em>Bu sizin ilanınız</em></p>';
-            } else {
-                altKisim = '<button class="buton" onclick="talepGonder(\'' + ilan.id + '\', \'' + ilan.olusturan_id + '\')">İletişime Geç</button>';
-            }
+        if (girisYapanKullanici && ilan.olusturan_id == girisYapanKullanici.id) {
+            altKisim = '<p><em>Bu sizin ilanınız</em></p>';
         } else {
-            altKisim = '<p><a href="giris.html">Giriş yaparak iletişime geçin</a></p>';
+            altKisim = '<p><strong>İlan Sahibi:</strong> ' + sahipAdi + '</p>';
+            if (girisYapanKullanici) {
+                altKisim += '<button class="buton" onclick="talepGonder(\'' + ilan.id + '\', \'' + ilan.olusturan_id + '\')">İletişime Geç</button>';
+            } else {
+                altKisim += '<p><a href="giris.html">Giriş yaparak iletişime geçin</a></p>';
+            }
         }
 
         html += '<div class="ilan-karti">' +
