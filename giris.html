@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap</title>
+    <link rel="stylesheet" href="stil.css">
+</head>
+<body>
+
+    <div class="menu">
+        <a href="index.html" class="logo">YTÜ Ekosistem</a>
+        <div>
+            <a href="kayit.html">Kayıt Ol</a>
+        </div>
+    </div>
+
+    <div class="icerik">
+        <div class="kutu kutu-kucuk">
+            <h2>Giriş Yap</h2>
+            <div id="mesaj" class="mesaj"></div>
+
+            <form id="girisFormu" onsubmit="girisYap(event)">
+                <div class="form-alan">
+                    <label>Email:</label>
+                    <input type="email" id="email" required placeholder="ornek@std.yildiz.edu.tr">
+                </div>
+                <div class="form-alan">
+                    <label>Şifre:</label>
+                    <input type="password" id="sifre" required>
+                </div>
+                <button type="submit" class="buton" id="girisButon">Giriş Yap</button>
+            </form>
+
+            <p style="margin-top:15px; text-align:center;">
+                Hesabınız yok mu? <a href="kayit.html">Kayıt Olun</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        var veritabani = supabase.createClient(
+            'https://avtoydkihbspbclgtmfd.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2dG95ZGtpaGJzcGJjbGd0bWZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMTMzMzcsImV4cCI6MjA5MjY4OTMzN30.PJdYOGKV9nR6l0SGW_u1ZMUa0ikn_LTpBykxwhvVcy8'
+        );
+
+        window.onload = async function() {
+            var oturum = await veritabani.auth.getSession();
+            if (oturum.data.session) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        async function girisYap(e) {
+            e.preventDefault();
+            var email = document.getElementById('email').value;
+            var sifre = document.getElementById('sifre').value;
+            var buton = document.getElementById('girisButon');
+
+            buton.disabled = true;
+            buton.textContent = 'Giriş yapılıyor...';
+
+            var sonuc = await veritabani.auth.signInWithPassword({
+                email: email,
+                password: sifre
+            });
+
+            if (sonuc.error) {
+                mesajGoster('Email veya şifre hatalı.', true);
+                buton.disabled = false;
+                buton.textContent = 'Giriş Yap';
+            } else {
+                mesajGoster('Giriş başarılı!', false);
+                setTimeout(function() {
+                    window.location.href = 'index.html';
+                }, 1000);
+            }
+        }
+
+        function mesajGoster(metin, hataMi) {
+            var el = document.getElementById('mesaj');
+            el.textContent = metin;
+            el.style.display = 'block';
+            if (hataMi) {
+                el.className = 'mesaj mesaj-hata';
+            } else {
+                el.className = 'mesaj mesaj-basari';
+            }
+        }
+    </script>
+</body>
+</html>

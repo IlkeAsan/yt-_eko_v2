@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Ol</title>
+    <link rel="stylesheet" href="stil.css">
+</head>
+<body>
+
+    <div class="menu">
+        <a href="index.html" class="logo">YTÜ Ekosistem</a>
+        <div>
+            <a href="giris.html">Giriş Yap</a>
+        </div>
+    </div>
+
+    <div class="icerik">
+        <div class="kutu kutu-kucuk">
+            <h2>Kayıt Ol</h2>
+            <div id="mesaj" class="mesaj"></div>
+
+            <form onsubmit="kayitOl(event)">
+                <div class="form-alan">
+                    <label>İsim:</label>
+                    <input type="text" id="isim" required>
+                </div>
+                <div class="form-alan">
+                    <label>Soyisim:</label>
+                    <input type="text" id="soyisim" required>
+                </div>
+                <div class="form-alan">
+                    <label>Email:</label>
+                    <input type="email" id="email" required placeholder="ornek@std.yildiz.edu.tr">
+                    <small style="color:gray;">Sadece @std.yildiz.edu.tr veya @yildiz.edu.tr kabul edilir.</small>
+                </div>
+                <div class="form-alan">
+                    <label>Telefon (11 haneli):</label>
+                    <input type="tel" id="telefon" required placeholder="05xxxxxxxxx">
+                </div>
+                <div class="form-alan">
+                    <label>Şifre:</label>
+                    <input type="password" id="sifre" required minlength="6">
+                </div>
+                <div class="form-alan">
+                    <label>Şifre Tekrar:</label>
+                    <input type="password" id="sifreTekrar" required minlength="6">
+                </div>
+                <button type="submit" class="buton" id="kayitButon">Kayıt Ol</button>
+            </form>
+
+            <p style="margin-top:15px; text-align:center;">
+                Hesabınız var mı? <a href="giris.html">Giriş Yapın</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        var veritabani = supabase.createClient(
+            'https://avtoydkihbspbclgtmfd.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2dG95ZGtpaGJzcGJjbGd0bWZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMTMzMzcsImV4cCI6MjA5MjY4OTMzN30.PJdYOGKV9nR6l0SGW_u1ZMUa0ikn_LTpBykxwhvVcy8'
+        );
+
+        async function kayitOl(e) {
+            e.preventDefault();
+
+            var isim = document.getElementById('isim').value;
+            var soyisim = document.getElementById('soyisim').value;
+            var email = document.getElementById('email').value;
+            var telefon = document.getElementById('telefon').value;
+            var sifre = document.getElementById('sifre').value;
+            var sifreTekrar = document.getElementById('sifreTekrar').value;
+            var buton = document.getElementById('kayitButon');
+
+            // email kontrolu
+            if (!email.endsWith('@std.yildiz.edu.tr') && !email.endsWith('@yildiz.edu.tr')) {
+                mesajGoster('Sadece YTÜ uzantılı e-posta adresleri kabul edilir.', true);
+                return;
+            }
+
+            // telefon kontrolu
+            if (telefon.length != 11) {
+                mesajGoster('Telefon numarası 11 haneli olmalıdır.', true);
+                return;
+            }
+
+            // sifre kontrolu
+            if (sifre != sifreTekrar) {
+                mesajGoster('Şifreler birbiriyle uyuşmuyor.', true);
+                return;
+            }
+
+            buton.disabled = true;
+            buton.textContent = 'Kayıt olunuyor...';
+
+            var sonuc = await veritabani.auth.signUp({
+                email: email,
+                password: sifre,
+                options: {
+                    data: {
+                        first_name: isim,
+                        last_name: soyisim,
+                        phone: telefon
+                    }
+                }
+            });
+
+            if (sonuc.error) {
+                mesajGoster('Kayıt hatası: ' + sonuc.error.message, true);
+                buton.disabled = false;
+                buton.textContent = 'Kayıt Ol';
+            } else {
+                mesajGoster('Kayıt başarılı!', false);
+                alert('Kayıt başarılı');
+                window.location.href = 'giris.html';
+            }
+        }
+
+        function mesajGoster(metin, hataMi) {
+            var el = document.getElementById('mesaj');
+            el.textContent = metin;
+            el.style.display = 'block';
+            if (hataMi) {
+                el.className = 'mesaj mesaj-hata';
+            } else {
+                el.className = 'mesaj mesaj-basari';
+            }
+        }
+    </script>
+</body>
+</html>
