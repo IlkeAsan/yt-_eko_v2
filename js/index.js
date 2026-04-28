@@ -136,21 +136,21 @@ async function talepGonder(ilanId, sahipId) {
     if (!emin) return;
 
     // Daha önce talep gönderilmiş mi kontrol et
-    var kontrol = await veritabani.from('requests')
+    var kontrol = await veritabani.from('talepler')
         .select('*')
-        .eq('listing_id', ilanId)
-        .eq('requester_id', girisYapanKullanici.id);
+        .eq('ilan_id', ilanId)
+        .eq('alici_id', girisYapanKullanici.id);
 
     if (kontrol.data && kontrol.data.length > 0) {
         alert('Bu ilan için zaten bir talebiniz bulunuyor.');
         return;
     }
 
-    var sonuc = await veritabani.from('requests').insert([{
-        listing_id: ilanId,
-        owner_id: sahipId,
-        requester_id: girisYapanKullanici.id,
-        status: 'pending'
+    var sonuc = await veritabani.from('talepler').insert([{
+        ilan_id: ilanId,
+        satici_id: sahipId,
+        alici_id: girisYapanKullanici.id,
+        durum: 'beklemede'
     }]);
 
     if (sonuc.error) {

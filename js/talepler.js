@@ -17,16 +17,18 @@ async function talepleriYukle() {
 }
 
 async function gelenTalepleriYukle() {
-    var { data, error } = await veritabani.from('requests')
-        .select('*, listings(ders_kodu), profiles:requester_id(ad_soyad)')
-        .eq('owner_id', kullanici.id);
+    var sonuc = await veritabani.from('talepler')
+        .select('*, listings:ilan_id(ders_kodu), profiles:alici_id(ad_soyad)')
+        .eq('satici_id', kullanici.id);
 
     var alan = document.getElementById('gelen-talepler');
-    if (error) {
+    if (sonuc.error) {
+        console.log('Gelen talepler hatası:', sonuc.error);
         alan.innerHTML = '<p>Hata oluştu.</p>';
         return;
     }
 
+    var data = sonuc.data;
     if (data.length == 0) {
         alan.innerHTML = '<p>Henüz gelen bir talep yok.</p>';
         return;
@@ -35,12 +37,12 @@ async function gelenTalepleriYukle() {
     var html = '';
     for (var i = 0; i < data.length; i++) {
         var talep = data[i];
-        var durum = talep.status == 'pending' ? 'Bekliyor' : (talep.status == 'approved' ? 'Onaylandı' : 'Reddedildi');
-        
+        var durum = talep.durum == 'beklemede' ? 'Bekliyor' : (talep.durum == 'onaylandi' ? 'Onaylandı' : 'Reddedildi');
+
         var butonlar = '';
-        if (talep.status == 'pending') {
-            butonlar = '<button class="buton" onclick="talepGuncelle(\'' + talep.id + '\', \'approved\')">Onayla</button> ' +
-                       '<button class="buton buton-sil" onclick="talepGuncelle(\'' + talep.id + '\', \'rejected\')">Reddet</button>';
+        if (talep.durum == 'beklemede') {
+            butonlar = '<button class="buton" onclick="talepGuncelle(\'' + talep.id + '\', \'onaylandi\')">Onayla</button> ' +
+                       '<button class="buton buton-sil" onclick="talepGuncelle(\'' + talep.id + '\', \'reddedildi\')">Reddet</button>';
         }
 
         html += '<div class="ilan-karti">' +
@@ -54,16 +56,18 @@ async function gelenTalepleriYukle() {
 }
 
 async function gidenTalepleriYukle() {
-    var { data, error } = await veritabani.from('requests')
-        .select('*, listings(ders_kodu), profiles:owner_id(ad_soyad, telefon)')
-        .eq('requester_id', kullanici.id);
+    var sonuc = await veritabani.from('talepler')
+        .select('*, listings:ilan_id(ders_kodu), profiles:satici_id(ad_soyad, telefon)')
+        .eq('alici_id', kullanici.id);
 
     var alan = document.getElementById('giden-talepler');
-    if (error) {
+    if (sonuc.error) {
+        console.log('Giden talepler hatası:', sonuc.error);
         alan.innerHTML = '<p>Hata oluştu.</p>';
         return;
     }
 
+    var data = sonuc.data;
     if (data.length == 0) {
         alan.innerHTML = '<p>Henüz bir talep göndermediniz.</p>';
         return;
@@ -72,10 +76,10 @@ async function gidenTalepleriYukle() {
     var html = '';
     for (var i = 0; i < data.length; i++) {
         var talep = data[i];
-        var durum = talep.status == 'pending' ? 'Bekliyor' : (talep.status == 'approved' ? 'Onaylandı' : 'Reddedildi');
-        
+        var durum = talep.durum == 'beklemede' ? 'Bekliyor' : (talep.durum == 'onaylandi' ? 'Onaylandı' : 'Reddedildi');
+
         var iletisim = '';
-        if (talep.status == 'approved' && talep.profiles && talep.profiles.telefon) {
+        if (talep.durum == 'onaylandi' && talep.profiles && talep.profiles.telefon) {
             iletisim = '<p style="color:green; font-weight:bold;">📞 Telefon: ' + talep.profiles.telefon + '</p>';
         }
 
@@ -90,12 +94,12 @@ async function gidenTalepleriYukle() {
 }
 
 async function talepGuncelle(id, yeniDurum) {
-    var { error } = await veritabani.from('requests')
-        .update({ status: yeniDurum })
+    var sonuc = await veritabani.from('talepler')
+        .update({ durum: yeniDurum })
         .eq('id', id);
 
-    if (error) {
-        alert('Güncelleme hatası: ' + error.message);
+    if (sonuc.error) {
+        alert('Güncelleme hatası: ' + sonuc.error.message);
     } else {
         talepleriYukle();
     }
