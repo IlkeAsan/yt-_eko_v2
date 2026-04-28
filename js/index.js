@@ -12,10 +12,11 @@ window.onload = async function() {
 
 function menuGuncelle() {
     var linkler = document.getElementById('menu-linkler');
-    if (girisYapanKullanici) {
         linkler.innerHTML = '<a href="index.html">İlanlar</a>' +
+            '<a href="talepler.html">Talepler</a>' +
             '<a href="ilanlarim.html">İlanlarım</a>' +
             '<a href="ilan-ekle.html">İlan Ekle</a>' +
+            '<a href="profil.html">Profilim</a>' +
             '<a href="#" onclick="cikisYap()">Çıkış</a>';
     } else {
         linkler.innerHTML = '<a href="giris.html">Giriş Yap</a>' +
@@ -86,10 +87,14 @@ function ilanlariGoster(ilanlar) {
 
         // kendi ilani mi kontrol
         var altKisim = '';
-        if (girisYapanKullanici && ilan.olusturan_id == girisYapanKullanici.id) {
-            altKisim = '<p><em>Bu sizin ilanınız</em></p>';
+        if (girisYapanKullanici) {
+            if (ilan.olusturan_id == girisYapanKullanici.id) {
+                altKisim = '<p><em>Bu sizin ilanınız</em></p>';
+            } else {
+                altKisim = '<button class="buton" onclick="talepGonder(\'' + ilan.id + '\', \'' + ilan.olusturan_id + '\')">İletişime Geç</button>';
+            }
         } else {
-            altKisim = '<p><strong>İlan Sahibi:</strong> ' + sahipAdi + '</p>';
+            altKisim = '<p><a href="giris.html">Giriş yaparak iletişime geçin</a></p>';
         }
 
         html += '<div class="ilan-karti">' +
@@ -116,5 +121,40 @@ document.getElementById('filtre').onchange = function() {
             }
         }
         ilanlariGoster(filtreli);
+    }
+}
+
+async function talepGonder(ilanId, sahipId) {
+    if (!girisYapanKullanici) {
+        alert('Lütfen önce giriş yapın.');
+        window.location.href = 'giris.html';
+        return;
+    }
+
+    var emin = confirm('Bu ilan için iletişime geçme talebi göndermek istiyor musunuz?');
+    if (!emin) return;
+
+    // Daha önce talep gönderilmiş mi kontrol et
+    var kontrol = await veritabani.from('requests')
+        .select('*')
+        .eq('listing_id', ilanId)
+        .eq('requester_id', girisYapanKullanici.id);
+
+    if (kontrol.data && kontrol.data.length > 0) {
+        alert('Bu ilan için zaten bir talebiniz bulunuyor.');
+        return;
+    }
+
+    var sonuc = await veritabani.from('requests').insert([{
+        listing_id: ilanId,
+        owner_id: sahipId,
+        requester_id: girisYapanKullanici.id,
+        status: 'pending'
+    }]);
+
+    if (sonuc.error) {
+        alert('Talep gönderilirken hata oluştu: ' + sonuc.error.message);
+    } else {
+        alert('Talebiniz iletildi! "Talepler" menüsünden takip edebilirsiniz.');
     }
 }
