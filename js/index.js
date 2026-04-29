@@ -30,6 +30,47 @@ async function cikisYap() {
     window.location.href = 'index.html';
 }
 
+// Kullanicinin ortalama puanini getir
+async function ortalamaPuanGetir(userId) {
+    var sonuc = await veritabani.from('puanlar')
+        .select('puan')
+        .eq('puanlanan_id', userId);
+
+    if (sonuc.error || !sonuc.data || sonuc.data.length == 0) {
+        return null; // hic puan yok
+    }
+
+    var toplam = 0;
+    for (var i = 0; i < sonuc.data.length; i++) {
+        toplam += sonuc.data[i].puan;
+    }
+    return {
+        ortalama: (toplam / sonuc.data.length).toFixed(1),
+        adet: sonuc.data.length
+    };
+}
+
+// Puan bilgisini HTML olarak olustur
+function puanBilgiHtml(puanBilgi) {
+    if (!puanBilgi) return '';
+
+    var ort = parseFloat(puanBilgi.ortalama);
+    var html = '<span class="puan-bilgi">';
+
+    // Dolu ve bos yildizlar
+    for (var i = 1; i <= 5; i++) {
+        if (i <= Math.round(ort)) {
+            html += '<span class="yildiz" style="color:#f5a623;">★</span>';
+        } else {
+            html += '<span class="yildiz" style="color:#ccc;">★</span>';
+        }
+    }
+
+    html += '<span class="deger">' + puanBilgi.ortalama + ' (' + puanBilgi.adet + ')</span>';
+    html += '</span>';
+    return html;
+}
+
 async function ilanlariGetir() {
     var sonuc = await veritabani.from('listings').select('*');
 
@@ -41,18 +82,30 @@ async function ilanlariGetir() {
 
     var ilanlar = sonuc.data;
 
-    // her ilanin sahibinin ismini bul
-    for (var i = 0; i < ilanlar.length; i++) {
-        var profil = await veritabani.from('profiles')
-            .select('ad_soyad')
-            .eq('id', ilanlar[i].olusturan_id)
-            .single();
+    // her ilanin sahibinin ismini ve puanini bul
+    // Ayni sahip icin tekrar sorgu atmamak icin cache kullanalim
+    var profilCache = {};
+    var puanCache = {};
 
-        if (profil.data) {
-            ilanlar[i].sahipAdi = profil.data.ad_soyad;
-        } else {
-            ilanlar[i].sahipAdi = 'Bilinmiyor';
+    for (var i = 0; i < ilanlar.length; i++) {
+        var sahipId = ilanlar[i].olusturan_id;
+
+        // Profil cache
+        if (!profilCache[sahipId]) {
+            var profil = await veritabani.from('profiles')
+                .select('ad_soyad')
+                .eq('id', sahipId)
+                .single();
+
+            profilCache[sahipId] = profil.data ? profil.data.ad_soyad : 'Bilinmiyor';
         }
+        ilanlar[i].sahipAdi = profilCache[sahipId];
+
+        // Puan cache
+        if (puanCache[sahipId] === undefined) {
+            puanCache[sahipId] = await ortalamaPuanGetir(sahipId);
+        }
+        ilanlar[i].puanBilgi = puanCache[sahipId];
     }
 
     tumIlanlar = ilanlar;
@@ -91,7 +144,8 @@ function ilanlariGoster(ilanlar) {
         if (girisYapanKullanici && ilan.olusturan_id == girisYapanKullanici.id) {
             altKisim = '<p><em>Bu sizin ilanınız</em></p>';
         } else {
-            altKisim = '<p><strong>İlan Sahibi:</strong> ' + sahipAdi + '</p>';
+            var puanGosterim = puanBilgiHtml(ilan.puanBilgi);
+            altKisim = '<p><strong>İlan Sahibi:</strong> ' + sahipAdi + puanGosterim + '</p>';
             if (girisYapanKullanici) {
                 altKisim += '<button class="buton" onclick="talepGonder(\'' + ilan.id + '\', \'' + ilan.olusturan_id + '\')">İletişime Geç</button>';
             } else {

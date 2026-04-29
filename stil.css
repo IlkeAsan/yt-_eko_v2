@@ -170,3 +170,64 @@ body {
     color: #006600;
     border: 1px solid #99ff99;
 }
+
+/* yildiz puanlama */
+.yildizlar {
+    display: inline-flex;
+    gap: 2px;
+    margin-top: 5px;
+}
+
+.yildizlar span {
+    font-size: 22px;
+    cursor: pointer;
+    color: #ccc;
+    transition: color 0.15s;
+}
+
+.yildizlar span:hover,
+.yildizlar span:hover ~ span {
+    color: #ccc;
+}
+
+.yildizlar span.dolu,
+.yildizlar span.secili {
+    color: #f5a623;
+}
+
+.yildizlar.sadece-goster span {
+    cursor: default;
+    font-size: 16px;
+}
+
+.puan-kutu {
+    margin-top: 10px;
+    padding: 8px;
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+.puan-kutu p {
+    margin: 0 0 5px 0;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.puan-bilgi {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    color: #f5a623;
+    margin-left: 6px;
+}
+
+.puan-bilgi .yildiz {
+    font-size: 16px;
+}
+
+.puan-bilgi .deger {
+    color: #666;
+    font-size: 13px;
+}

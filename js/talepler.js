@@ -102,6 +102,27 @@ async function gidenTalepleriYukle() {
         return;
     }
 
+    // Onaylanan taleplerin puanlarini toplu olarak cek
+    var onaylananIdler = [];
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].durum == 'onaylandi') {
+            onaylananIdler.push(data[i].id);
+        }
+    }
+
+    var mevcutPuanlar = {};
+    if (onaylananIdler.length > 0) {
+        var puanSonuc = await veritabani.from('puanlar')
+            .select('talep_id, puan')
+            .in('talep_id', onaylananIdler);
+
+        if (puanSonuc.data) {
+            for (var k = 0; k < puanSonuc.data.length; k++) {
+                mevcutPuanlar[puanSonuc.data[k].talep_id] = puanSonuc.data[k].puan;
+            }
+        }
+    }
+
     var html = '';
     for (var i = 0; i < data.length; i++) {
         var talep = data[i];
@@ -119,14 +140,90 @@ async function gidenTalepleriYukle() {
             iletisim = '<p style="color:green; font-weight:bold;">📞 Telefon: ' + satici.tel + '</p>';
         }
 
+        // Puanlama kismi (sadece onaylanan talepler icin)
+        var puanHtml = '';
+        if (talep.durum == 'onaylandi') {
+            if (mevcutPuanlar[talep.id] !== undefined) {
+                // Zaten puanlanmis - goster
+                var verilen = mevcutPuanlar[talep.id];
+                puanHtml = '<div class="puan-kutu">' +
+                    '<p>Verdiğiniz puan:</p>' +
+                    '<div class="yildizlar sadece-goster">';
+                for (var y = 1; y <= 5; y++) {
+                    puanHtml += '<span class="' + (y <= verilen ? 'dolu' : '') + '">★</span>';
+                }
+                puanHtml += '</div></div>';
+            } else {
+                // Henuz puanlanmamis - puanlama arayuzu goster
+                puanHtml = '<div class="puan-kutu">' +
+                    '<p>Satıcıyı puanlayın:</p>' +
+                    '<div class="yildizlar" id="yildiz-' + talep.id + '">';
+                for (var y = 1; y <= 5; y++) {
+                    puanHtml += '<span onclick="puanVer(\'' + talep.id + '\', \'' + talep.satici_id + '\', ' + y + ')" ' +
+                        'onmouseover="yildizHover(\'' + talep.id + '\', ' + y + ')" ' +
+                        'onmouseout="yildizHoverCik(\'' + talep.id + '\')">★</span>';
+                }
+                puanHtml += '</div></div>';
+            }
+        }
+
         html += '<div class="ilan-karti">' +
             '<h3>' + ilan.ders_kodu + '</h3>' +
             '<p><strong>İlan Sahibi:</strong> ' + satici.ad_soyad + '</p>' +
             '<p><strong>Durum:</strong> ' + durum + '</p>' +
             iletisim +
+            puanHtml +
             '</div>';
     }
     alan.innerHTML = html;
+}
+
+// Yildiz hover efektleri
+function yildizHover(talepId, yildizNo) {
+    var kutu = document.getElementById('yildiz-' + talepId);
+    if (!kutu) return;
+    var yildizlar = kutu.getElementsByTagName('span');
+    for (var i = 0; i < yildizlar.length; i++) {
+        if (i < yildizNo) {
+            yildizlar[i].classList.add('secili');
+        } else {
+            yildizlar[i].classList.remove('secili');
+        }
+    }
+}
+
+function yildizHoverCik(talepId) {
+    var kutu = document.getElementById('yildiz-' + talepId);
+    if (!kutu) return;
+    var yildizlar = kutu.getElementsByTagName('span');
+    for (var i = 0; i < yildizlar.length; i++) {
+        yildizlar[i].classList.remove('secili');
+    }
+}
+
+// Puan verme fonksiyonu
+async function puanVer(talepId, puanlananId, puan) {
+    var emin = confirm(puan + ' yıldız vermek istiyor musunuz?');
+    if (!emin) return;
+
+    var sonuc = await veritabani.from('puanlar').insert([{
+        talep_id: talepId,
+        puanlayan_id: kullanici.id,
+        puanlanan_id: puanlananId,
+        puan: puan
+    }]);
+
+    if (sonuc.error) {
+        if (sonuc.error.code == '23505') {
+            alert('Bu talep için zaten puan vermişsiniz.');
+        } else {
+            alert('Puan verme hatası: ' + sonuc.error.message);
+        }
+        return;
+    }
+
+    alert('Puanınız kaydedildi!');
+    gidenTalepleriYukle();
 }
 
 async function talepGuncelle(id, yeniDurum) {
