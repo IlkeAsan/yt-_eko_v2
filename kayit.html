@@ -46,12 +46,34 @@
                     <label>Şifre Tekrar:</label>
                     <input type="password" id="sifreTekrar" required minlength="6">
                 </div>
-                <button type="submit" class="buton" id="kayitButon">Kayıt Ol</button>
+
+                <div class="kvkk-onay">
+                    <label>
+                        <input type="checkbox" id="kvkkOnay">
+                        <a href="#" id="kvkkLink" class="kvkk-link">Kişisel Verilerin İşlenmesine İlişkin Aydınlatma Metni</a>'ni okudum ve kabul ediyorum.
+                    </label>
+                </div>
+
+                <button type="submit" class="buton" id="kayitButon" disabled>Kayıt Ol</button>
             </form>
 
             <p style="margin-top:15px; text-align:center;">
                 Hesabınız var mı? <a href="giris.html">Giriş Yapın</a>
             </p>
+        </div>
+    </div>
+
+    <!-- KVKK Aydınlatma Metni Modalı -->
+    <div id="kvkkModal" class="kvkk-modal">
+        <div class="kvkk-modal-icerik">
+            <button class="kvkk-modal-kapat" id="kvkkKapat">&times;</button>
+            <h2>KVKK Aydınlatma Metni</h2>
+            
+            <p>Paylaştığınız telefon numarası bilgisi, sadece ürün satıcısı (ilan sahibi) ve alıcısı (talep eden) arasındaki iletişimi sağlamak amacıyla işlenmektedir.</p>
+            
+            <p><strong>Önemli:</strong> Satıcı tarafın talebi onaylamaması durumunda telefon numaranız kesinlikle kimseyle paylaşılmayacaktır.</p>
+
+            <p style="margin-top:20px; font-size:13px; color:#888;">Bu onay, sistemin güvenli iletişimi sağlaması için gereklidir.</p>
         </div>
     </div>
 

@@ -231,3 +231,115 @@ body {
     color: #666;
     font-size: 13px;
 }
+
+/* kvkk onay alani */
+.kvkk-onay {
+    margin: 15px 0;
+    padding: 12px;
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.kvkk-onay label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: #444;
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+.kvkk-onay input[type="checkbox"] {
+    margin-top: 3px;
+    width: auto;
+    flex-shrink: 0;
+}
+
+.kvkk-link {
+    color: #0066cc;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.kvkk-link:hover {
+    color: #004499;
+}
+
+/* kvkk modal */
+.kvkk-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.kvkk-modal.acik {
+    display: flex;
+}
+
+.kvkk-modal-icerik {
+    background: white;
+    width: 90%;
+    max-width: 650px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 30px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.kvkk-modal-icerik h2 {
+    margin-top: 0;
+    color: #0066cc;
+    font-size: 18px;
+    padding-right: 30px;
+}
+
+.kvkk-modal-icerik h3 {
+    color: #333;
+    font-size: 15px;
+    margin-top: 20px;
+}
+
+.kvkk-modal-icerik p,
+.kvkk-modal-icerik li {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.7;
+}
+
+.kvkk-modal-icerik ul {
+    padding-left: 20px;
+}
+
+.kvkk-modal-kapat {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #999;
+    width: auto;
+    padding: 0;
+    line-height: 1;
+}
+
+.kvkk-modal-kapat:hover {
+    color: #333;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
