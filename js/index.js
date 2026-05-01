@@ -15,7 +15,6 @@ function menuGuncelle() {
     if (girisYapanKullanici) {
         linkler.innerHTML = '<a href="index.html">İlanlar</a>' +
             '<a href="talepler.html">Talepler</a>' +
-            '<a href="ilanlarim.html">İlanlarım</a>' +
             '<a href="ilan-ekle.html">İlan Ekle</a>' +
             '<a href="profil.html">Profilim</a>' +
             '<a href="#" onclick="cikisYap()">Çıkış</a>';
