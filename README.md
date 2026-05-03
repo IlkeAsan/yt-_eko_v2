@@ -1,14 +1,12 @@
 # YTÜ Akademik Ekosistem (ytuEKO)
 
-Bu proje Yıldız Teknik Üniversitesi öğrencilerinin kendi aralarında laboratuvar malzemelerini alıp verebilmesi için geliştirilmiş basit bir web uygulamasıdır.
-
-## 🛠 Kullanılan Kütüphaneler
-Projede herhangi bir ağır framework (React, Vue vb.) veya npm paketi kullanılmamıştır. Tamamen **Vanilla JS (Saf JavaScript)**, HTML ve CSS ile yazılmıştır.
+## Kullanılan Kütüphaneler
+Projede herhangi bir ağır framework (React, Vue vb.) veya npm paketi kullanılmamıştır. Tamamen **Vanilla JS**, HTML ve CSS ile yazılmıştır.
 
 Sadece veri tabanı işlemleri için dışarıdan **Supabase JS Client** kütüphanesi CDN üzerinden projeye dahil edilmiştir:
 - `<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>`
 
-## 🗄️ Veri Tabanı Bağlantısı
+## Veri Tabanı Bağlantısı
 Veri tabanı olarak **Supabase** kullanılmıştır. Uygulamanın backend'i (sunucusu) yoktur, veriler doğrudan Supabase servisinden çekilir ve yazılır. Kullanıcı kayıtları, ilanlar ve talepler Supabase tablolarında tutulmaktadır.
 
 ## Ortam Değişkenleri 
